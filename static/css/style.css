@@ -1,10 +1,10 @@
 /* Container for the frame */
 #gameFrame {
-    width: 600px;
-    height: 400px;
+    width: 80%;
+    height: 80%;
     border: 1px solid black;
     display: flex;
-    position: relative;
+    position: absolute;
 }
 
 /* Left side - blue */

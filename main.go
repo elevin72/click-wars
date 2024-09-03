@@ -51,10 +51,13 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 		ws.Close()
 	}()
 
-	msg := make([]byte, 5)
-	msg[0] = 1
-	binary.LittleEndian.PutUint32(msg[1:5], uint32(linePosition))
-	err = client.Conn.WriteMessage(websocket.BinaryMessage, msg)
+	initMessage := make([]byte, 5)
+	initMessage[0] = 1
+	binary.LittleEndian.PutUint32(initMessage[1:5], uint32(linePosition))
+	err = client.Conn.WriteMessage(websocket.BinaryMessage, initMessage)
+	if err != nil {
+		log.Println(err)
+	}
 
 	for {
 		_, message, err := ws.ReadMessage()
@@ -79,12 +82,10 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		// Parse the received bytes
 		x := int32(binary.LittleEndian.Uint32(message[1:5]))
 		y := int32(binary.LittleEndian.Uint32(message[5:9]))
 		color := message[9] // 0 for blue, 1 for red
 
-		// Update line position based on click color
 		lineMutex.Lock()
 		if color == 0 { // Blue side
 			linePosition++
