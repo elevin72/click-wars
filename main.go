@@ -41,6 +41,11 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
+
+	defer func() {
+		ws.Close()
+	}()
+
 	client := &Client{
 		Conn:         ws,
 		LastActivity: time.Now(),
@@ -51,14 +56,10 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	clients[ws] = client
 	clientsMutex.Unlock()
 
-	defer func() {
-		delete(clients, ws)
-		ws.Close()
-	}()
-
-	initMessage := make([]byte, 5)
+	initMessage := make([]byte, 9)
 	initMessage[0] = 1
 	binary.LittleEndian.PutUint32(initMessage[1:5], uint32(linePosition))
+	binary.LittleEndian.PutUint32(initMessage[5:9], uint32(totalHits))
 	err = client.Conn.WriteMessage(websocket.BinaryMessage, initMessage)
 	if err != nil {
 		log.Println(err)
@@ -93,17 +94,14 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		// binary.LittleEndian.
 		x := math.Float32frombits(binary.LittleEndian.Uint32(message[1:5]))
 		y := math.Float32frombits(binary.LittleEndian.Uint32(message[5:9]))
-		// x := float32(message[1:5])
-		// y := float32(binary.LittleEndian.Uint32(message[5:9]))
 		color := message[9] // 0 for blue, 1 for red
 
 		var lineIncrement int32
 		if color == 0 {
 			lineIncrement = 1
-		} else { // Red side
+		} else {
 			lineIncrement = -1
 		}
 		if linePosition > -80 && linePosition < 80 {
@@ -117,14 +115,11 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 
 		log.Printf("Received x: %f, y: %f, color: %d\n", x, y, color)
 		log.Printf("New line position: %d\n", linePosition)
+		log.Printf("New total hits : %d\n", totalHits)
 
 		clientsMutex.Lock()
 		responseMessage := createUpdatedMessage(x, y, color, linePosition, totalHits)
 		for _, c := range clients {
-			// err := c.Conn.WriteMessage(websocket.BinaryMessage, responseMessage)
-			// if err != nil {
-			// 	log.Println(err)
-			// }
 			if c != client {
 				err := c.Conn.WriteMessage(websocket.BinaryMessage, responseMessage)
 				if err != nil {
@@ -167,12 +162,12 @@ type rootData struct {
 }
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-	// http.ServeFile(w, r, "index.html")
 	t, err := template.ParseFiles("index.html")
 	if err != nil {
 		log.Print(err)
 	}
-	d := rootData{linePosition, totalHits}
+	fmt.Printf("In root handler linePosition = %d, totalHits = %d\n", linePosition, totalHits)
+	d := rootData{LinePosition: linePosition, TotalHits: totalHits}
 	t.Execute(w, d)
 }
 
@@ -186,15 +181,14 @@ func main() {
 
 	http.HandleFunc("/", rootHandler)
 	http.HandleFunc("/static/", staticHandler)
-	// http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.HandleFunc("/ws", handleConnections)
 
-	// go func() {
-	// 	for {
-	// 		closeStaleConnections()
-	// 		time.Sleep(5 * time.Second)
-	// 	}
-	// }()
+	go func() {
+		for {
+			closeStaleConnections()
+			time.Sleep(5 * time.Second)
+		}
+	}()
 
 	port := "8080"
 	fmt.Printf("Server started on http://localhost:%s\n", port)
