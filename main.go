@@ -3,7 +3,9 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
+	"html/template"
 	"log"
+	"math"
 	"net/http"
 	"sync"
 	"time"
@@ -91,8 +93,11 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		x := int32(binary.LittleEndian.Uint32(message[1:5]))
-		y := int32(binary.LittleEndian.Uint32(message[5:9]))
+		// binary.LittleEndian.
+		x := math.Float32frombits(binary.LittleEndian.Uint32(message[1:5]))
+		y := math.Float32frombits(binary.LittleEndian.Uint32(message[5:9]))
+		// x := float32(message[1:5])
+		// y := float32(binary.LittleEndian.Uint32(message[5:9]))
 		color := message[9] // 0 for blue, 1 for red
 
 		var lineIncrement int32
@@ -101,14 +106,16 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 		} else { // Red side
 			lineIncrement = -1
 		}
-		lineMutex.Lock()
-		linePosition += lineIncrement
-		lineMutex.Unlock()
+		if linePosition > -80 && linePosition < 80 {
+			lineMutex.Lock()
+			linePosition += lineIncrement
+			lineMutex.Unlock()
+		}
 		hitsMutex.Lock()
 		totalHits++
 		hitsMutex.Unlock()
 
-		log.Printf("Received x: %d, y: %d, color: %d\n", x, y, color)
+		log.Printf("Received x: %f, y: %f, color: %d\n", x, y, color)
 		log.Printf("New line position: %d\n", linePosition)
 
 		clientsMutex.Lock()
@@ -130,11 +137,11 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func createUpdatedMessage(x, y int32, color byte, linePosition, totalHits int32) []byte {
+func createUpdatedMessage(x, y float32, color byte, linePosition, totalHits int32) []byte {
 	msg := make([]byte, 18)
 	msg[0] = 0
-	binary.LittleEndian.PutUint32(msg[1:5], uint32(x))
-	binary.LittleEndian.PutUint32(msg[5:9], uint32(y))
+	binary.LittleEndian.PutUint32(msg[1:5], math.Float32bits(x))
+	binary.LittleEndian.PutUint32(msg[5:9], math.Float32bits(y))
 	msg[9] = color
 	binary.LittleEndian.PutUint32(msg[10:14], uint32(linePosition))
 	binary.LittleEndian.PutUint32(msg[14:], uint32(totalHits))
@@ -154,8 +161,19 @@ func closeStaleConnections() {
 	clientsMutex.Unlock()
 }
 
+type rootData struct {
+	LinePosition int32
+	TotalHits    int32
+}
+
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "index.html")
+	// http.ServeFile(w, r, "index.html")
+	t, err := template.ParseFiles("index.html")
+	if err != nil {
+		log.Print(err)
+	}
+	d := rootData{linePosition, totalHits}
+	t.Execute(w, d)
 }
 
 var s http.Handler = http.StripPrefix("/static/", http.FileServer(http.Dir("static")))
@@ -165,6 +183,7 @@ func staticHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+
 	http.HandleFunc("/", rootHandler)
 	http.HandleFunc("/static/", staticHandler)
 	// http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
