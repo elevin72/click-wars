@@ -19,11 +19,11 @@ socket.onmessage = function(event) {
     }
     const dataView = new DataView(arrayBuffer);
     if (dataView.getUint8(0) === 0) {
-        const x = dataView.getFloat32(1, true); // true for little-endian
-        const y = dataView.getFloat32(5, true);
-        const color = dataView.getUint8(9); // 0 for blue, 1 for red
-        const linePosition = dataView.getInt32(10, true);
-        const totalHits = dataView.getInt32(14, true);
+        const linePosition = dataView.getInt32(1, true);
+        const totalHits = dataView.getInt32(5, true);
+        const x = dataView.getFloat32(9, true); // true for little-endian
+        const y = dataView.getFloat32(13, true);
+        const color = dataView.getUint8(17); // 0 for blue, 1 for red
         console.log(`Received remote click at: (${x}, ${y}), color: ${color === 0 ? 'blue' : 'red'}, totalHits: ${totalHits}, linePosition ${linePosition}`, );
         updatePostClick(linePosition, totalHits)
         drawExpandingCircle(x, y);

@@ -16,12 +16,10 @@ h1 {
 }
 
 #leftSide {
-    width: 50%;
     background-color: blue;
 }
 
 #rightSide {
-    width: 50%;
     background-color: red;
 }
 

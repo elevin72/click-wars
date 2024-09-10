@@ -10,11 +10,9 @@ function onClick(event) {
     const x = (event.clientX - rect.left) / (rect.right - rect.left);
     const y = (event.clientY - rect.top) / (rect.bottom - rect.top);
 
-    const leftSide = document.getElementById("leftSide");
-    const inLeft =  event.target === leftSide || leftSide.contains(event.target)
     let color, newLinePosition;
     const oldLinePosition = getLinePosition()
-    if (inLeft) {
+    if (event.target === leftSide || leftSide.contains(event.target)) {
         color = 0;
         newLinePosition = oldLinePosition + 1;
     } else {
