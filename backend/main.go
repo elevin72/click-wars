@@ -14,23 +14,16 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type Color = uint8
-
-const (
-	BLUE Color = 0
-	RED  Color = 1
-)
-
 const (
 	LONG  byte = 0
 	SHORT byte = 1
 )
 
-type Click struct {
-	x     float32
-	y     float32
-	color Color
-}
+// type Click struct {
+// 	x     float32
+// 	y     float32
+// 	color Color
+// }
 
 func makeLongMessage(click Click) []byte {
 	msg := make([]byte, 18)
@@ -57,11 +50,6 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
-}
-
-type Client struct {
-	Conn         *websocket.Conn
-	LastActivity time.Time
 }
 
 var (
@@ -203,7 +191,7 @@ func closeStaleConnections() {
 }
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("index.html")
+	t, err := template.ParseFiles("../frontend/index.html")
 	if err != nil {
 		log.Print(err)
 	}
@@ -223,12 +211,12 @@ func staticHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.Header().Set("Content-Type", "text/css")
 	}
-	http.StripPrefix("/static/", http.FileServer(http.Dir("static"))).ServeHTTP(w, r)
+	http.StripPrefix("/static/", http.FileServer(http.Dir("../frontend/static"))).ServeHTTP(w, r)
 }
 
 func percentageOnLoadHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("hit percentage.css\n")
-	t, err := template.ParseFiles("static/css/percentage.css.tmpl")
+	t, err := template.ParseFiles("../frontend/static/css/percentage.css.tmpl")
 	if err != nil {
 		log.Print(err)
 	}
