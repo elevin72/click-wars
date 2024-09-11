@@ -4,6 +4,8 @@ import { socket } from './socket.js'
 import { drawExpandingCircle } from './animation.js';
 
 
+
+
 function onClick(event) {
     const canvas = document.getElementById('drawingCanvas');
     const rect = canvas.getBoundingClientRect();

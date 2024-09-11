@@ -2,9 +2,6 @@ import { drawExpandingCircle } from "./animation.js";
 let linePosition = 0;
 let totalHits = 0;
 
-export function setTotalHits(newTotalHits) {
-    totalHits = newTotalHits;
-}
 
 export function getTotalHits() {
     return totalHits;
@@ -18,13 +15,12 @@ export function getLinePosition() {
     return linePosition;
 }
 
-export function updateTotalHits(newTotalHits) {
-    setTotalHits(newTotalHits);
-    document.getElementById("totalHits").innerText = newTotalHits;
-}
 
-export function updateLinePostion(linePosition) {
-    setLinePosition(linePosition)
+
+export function updatePostClick(newLinePosition, newTotalHits) {
+    totalHits = newTotalHits;
+    linePosition = newLinePosition
+
     const percentage = ((linePosition * 3) + 50)
     let leftPerecentage, rightPercentage;
     if (percentage > 90 || percentage < 10) {
@@ -39,19 +35,8 @@ export function updateLinePostion(linePosition) {
     document.getElementById("leftSide").style.width = leftPerecentage;
     document.getElementById("rightSide").style.width = rightPercentage;
     document.getElementById("linePosition").innerText = linePosition;
-}
-
-export function updatePostClick(linePosition, totalHits) {
-    if (linePosition != null) {
-        updateLinePostion(linePosition)
-    }
-    if (totalHits != null) {
-        updateTotalHits(totalHits)
-    }
-
+    document.getElementById("totalHits").innerText = totalHits;
     document.getElementById("leftCount").innerText = (totalHits + linePosition) / 2;
     document.getElementById("rightCount").innerText = (totalHits - linePosition) / 2;
-    // document.getElementById("leftSide").style.width = leftPerecentage;
-    // document.getElementById("rightSide").style.width = rightPercentage;
 }
 
