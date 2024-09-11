@@ -246,7 +246,7 @@ func percentageOnLoadHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	http.HandleFunc("/", rootHandler)
 	http.HandleFunc("/static/", staticHandler)
-	http.HandleFunc("/static/css/percentage.css", percentageOnLoadHandler)
+	// http.HandleFunc("/static/css/percentage.css", percentageOnLoadHandler)
 	http.HandleFunc("/ws", handleConnections)
 
 	go func() {

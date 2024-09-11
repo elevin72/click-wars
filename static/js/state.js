@@ -24,15 +24,16 @@ export function updateTotalHits(newTotalHits) {
 }
 
 export function updateLinePostion(linePosition) {
-    const percentage = ((linePosition / -2) + 50)
-    if (percentage > 90 || percentage < 10) {
-        return;
-    }
-
     setLinePosition(linePosition)
-
-    const leftPerecentage = (100 - percentage) + "%"
-    const rightPercentage = (percentage) + "%"
+    const percentage = ((linePosition * 3) + 50)
+    let leftPerecentage, rightPercentage;
+    if (percentage > 90 || percentage < 10) {
+        leftPerecentage = "10%" ? percentage <= 10 : "90%"
+        rightPercentage = "90%" ? percentage >= 90 : "10%"
+    } else {
+        leftPerecentage = percentage.toString() + "%"
+        rightPercentage = (100 - percentage).toString() + "%"
+    }
 
     // update screen elements
     document.getElementById("leftSide").style.width = leftPerecentage;
@@ -47,7 +48,10 @@ export function updatePostClick(linePosition, totalHits) {
     if (totalHits != null) {
         updateTotalHits(totalHits)
     }
+
+    document.getElementById("leftCount").innerText = (totalHits + linePosition) / 2;
+    document.getElementById("rightCount").innerText = (totalHits - linePosition) / 2;
+    // document.getElementById("leftSide").style.width = leftPerecentage;
+    // document.getElementById("rightSide").style.width = rightPercentage;
 }
-
-
 

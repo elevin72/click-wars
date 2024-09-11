@@ -17,10 +17,20 @@ h1 {
 
 #leftSide {
     background-color: blue;
+    transition: width 1s ease-out;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #rightSide {
     background-color: red;
+    transition: width 1s ease-out;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #drawingCanvas {
@@ -52,7 +62,6 @@ h2 {
     margin-left: 2%;
     margin-right: 2%;
     width: 20%;
-
 }
 
 #bottomText {
@@ -61,4 +70,13 @@ h2 {
     display: flex;
     justify-content: center;
     position: relative;
+}
+
+.unselectable {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
