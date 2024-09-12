@@ -226,27 +226,9 @@ func staticHandler(w http.ResponseWriter, r *http.Request) {
 	http.StripPrefix("/static/", http.FileServer(http.Dir("static"))).ServeHTTP(w, r)
 }
 
-func percentageOnLoadHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("hit percentage.css\n")
-	t, err := template.ParseFiles("static/css/percentage.css.tmpl")
-	if err != nil {
-		log.Print(err)
-	}
-	percentage := float32(LINE_POSITION/-2) + 50
-	w.Header().Set("Content-Type", "text/css")
-	t.Execute(w, struct {
-		LeftSide  float32
-		RightSide float32
-	}{
-		LeftSide:  100 - percentage,
-		RightSide: percentage,
-	})
-}
-
 func main() {
 	http.HandleFunc("/", rootHandler)
 	http.HandleFunc("/static/", staticHandler)
-	// http.HandleFunc("/static/css/percentage.css", percentageOnLoadHandler)
 	http.HandleFunc("/ws", handleConnections)
 
 	go func() {
