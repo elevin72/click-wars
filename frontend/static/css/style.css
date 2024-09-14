@@ -17,10 +17,12 @@ h1 {
 
 #leftSide {
     background-color: blue;
+    width: 50%;
 }
 
 #rightSide {
     background-color: red;
+    width: 50%;
 }
 
 #drawingCanvas {

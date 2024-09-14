@@ -40,3 +40,12 @@ socket.onmessage = function(event) {
 socket.onclose = function(event) {
     console.log("WebSocket is closed.");
 };
+
+function sendPing() {
+    if (socket.readyState === WebSocket.OPEN) {
+        console.log("ping")
+        socket.send(new Uint8Array([0x9]));
+    }
+}
+
+// setInterval(sendPing, 10000);

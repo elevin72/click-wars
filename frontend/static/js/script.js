@@ -36,13 +36,6 @@ function onClick(event) {
 };
 
 
-function sendPing() {
-    if (socket.readyState === WebSocket.OPEN) {
-        console.log("ping")
-        socket.send(new Uint8Array([0xFF]));
-    }
-}
-
 function onResize(event) {
     console.log("resizing")
     const gameFrame = document.getElementById('gameFrame');
@@ -53,8 +46,8 @@ function onResize(event) {
 }
 onResize(null)
 
-setInterval(sendPing, 3000);
 addEventListener("resize", onResize)
 document.getElementById('gameFrame').addEventListener('click', onClick)
+console.log("hello")
 
 
