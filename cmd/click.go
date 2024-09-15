@@ -20,7 +20,7 @@ type Click struct {
 }
 
 func (c *Click) String() string {
-	return fmt.Sprintf("Click {X: %f, y: %f, color: %d}", c.x, c.y, c.color)
+	return fmt.Sprintf("Click {x: %f, y: %f, color: %d}", c.x, c.y, c.color)
 }
 
 func deserializeClick(message []byte) (*Click, error) {

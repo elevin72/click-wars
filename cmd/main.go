@@ -19,7 +19,6 @@ const (
 var static embed.FS
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("hello world!!!")
 	t, err := template.ParseFS(static, "static/index.html")
 	if err != nil {
 		log.Print(err)
@@ -42,7 +41,6 @@ func staticHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.Header().Set("Content-Type", "text/css")
 	}
-	// http.StripPrefix("/static/", http.FileServer(http.FS(static))).ServeHTTP(w, r)
 	http.FileServer(http.FS(static)).ServeHTTP(w, r)
 }
 
