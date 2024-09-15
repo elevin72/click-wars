@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo=">
+    <title>Click Wars</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/style.css">
+    <!-- <link rel="stylesheet" href="static/css/percentage.css"> -->
+</head>
+<body>
+    <div id="topText">
+        <h1>Welcome to Click Wars!</h1>
+    </div>
+
+    <div id="gameFrame">
+        <div id="leftSide"></div>
+        <div id="rightSide"></div>
+        <canvas id="drawingCanvas"></canvas>
+    </div>
+    <div id="bottomText">
+        <h2>Line Position: <div id="linePosition">{{ .LinePosition }}</div> </h2>
+        <h2>Total Hits: <div id="totalHits">{{ .TotalHits }}</div> </h2>
+    </div>
+    <script type="module" src='static/js/script.js'> </script>
+</body>
+</html>

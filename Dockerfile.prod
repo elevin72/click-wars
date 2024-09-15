@@ -1,0 +1,17 @@
+
+# Start from the official Go base image
+FROM golang:1.22-alpine
+
+WORKDIR /app
+
+COPY cmd/go.*  ./
+
+RUN go mod download
+
+COPY . .
+
+RUN go build -C cmd -o click-wars
+
+EXPOSE 8080
+
+CMD ["./cmd/click-wars"]

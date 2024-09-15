@@ -1,0 +1,19 @@
+# Start from the official Go base image
+FROM golang:1.22-alpine
+
+WORKDIR /app
+
+RUN go install github.com/air-verse/air@latest
+
+COPY cmd/go.*  ./
+
+RUN go mod download
+
+COPY . .
+
+# RUN go build -o click-wars
+
+EXPOSE 8080
+
+# CMD ["./click-wars"]
+CMD ["air", "-c", ".air.toml"]
