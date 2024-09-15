@@ -6,6 +6,9 @@ import (
 	"html/template"
 	"log"
 
+	// "os"
+	// "strconv"
+
 	"net/http"
 	"strings"
 )
@@ -17,21 +20,6 @@ const (
 
 //go:embed static/*
 var static embed.FS
-
-func rootHandler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFS(static, "static/index.html")
-	if err != nil {
-		log.Print(err)
-	}
-
-	t.Execute(w, struct {
-		LinePosition int32
-		TotalHits    int32
-	}{
-		LinePosition: linePosition.Load(),
-		TotalHits:    totalHits.Load(),
-	})
-}
 
 func staticHandler(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
@@ -46,20 +34,60 @@ func staticHandler(w http.ResponseWriter, r *http.Request) {
 	http.FileServer(http.FS(static)).ServeHTTP(w, r)
 }
 
+func rootHandler(w http.ResponseWriter, r *http.Request) {
+	t, err := template.ParseFS(static, "static/index.html")
+	if err != nil {
+		log.Print(err)
+	}
+
+	linePosition := linePosition.Load()
+	totalHits := totalHits.Load()
+	i := IndexParams{
+		LinePosition: linePosition,
+		TotalHits:    totalHits,
+		LeftCount:    float32(totalHits+linePosition) / 2,
+		RightCount:   float32(totalHits-linePosition) / 2,
+	}
+	t.Execute(w, i)
+}
+
+type IndexParams struct {
+	LinePosition int32
+	TotalHits    int32
+	LeftCount    float32
+	RightCount   float32
+}
+
+type Widths struct {
+	LeftWidth  float32
+	RightWidth float32
+}
+
+func calcPercentageWidths() Widths {
+	// scalingConstant, ok := os.LookupEnv("SCALE")
+	// if !ok {
+	// 	scalingConstant = "1"
+	// }
+	// scalingConstantFloat, err := strconv.ParseFloat(scalingConstant, 32)
+	// if err != nil {
+	// 	fmt.Print(err)
+	// }
+	scalingConstantFloat := 2
+	percentage := (float32(linePosition.Load()) * float32(scalingConstantFloat)) + 50
+	return Widths{
+		LeftWidth:  percentage,
+		RightWidth: 100 - percentage,
+	}
+}
+
 func percentageOnLoadHandler(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFS(static, "static/css/percentage.css.tmpl")
 	if err != nil {
 		log.Print(err)
 	}
 	w.Header().Set("Content-Type", "text/css")
-	percentage := float32(linePosition.Load()/-2) + 50
-	t.Execute(w, struct {
-		LeftSide  float32
-		RightSide float32
-	}{
-		LeftSide:  100 - percentage,
-		RightSide: percentage,
-	})
+	widths := calcPercentageWidths()
+	t.Execute(w, widths)
 }
 
 func main() {

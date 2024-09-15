@@ -12,16 +12,20 @@
     <link rel="stylesheet" href="static/css/percentage.css">
 </head>
 <body>
-    <div id="topText">
+    <div id="topText" class="unselectable">
         <h1>Welcome to Click Wars!</h1>
     </div>
 
     <div id="gameFrame">
-        <div id="leftSide"></div>
-        <div id="rightSide"></div>
-        <canvas id="drawingCanvas"></canvas>
+        <div id="leftSide">
+            <div id="leftCount" class="unselectable">{{ .LeftCount }}</div>
+        </div>
+        <div id="rightSide">
+            <div id="rightCount" class="unselectable">{{ .RightCount }}</div>
+        </div>
+        <canvas id="drawingCanvas" height=""></canvas>
     </div>
-    <div id="bottomText">
+    <div id="bottomText" class="unselectable">
         <h2>Line Position: <div id="linePosition">{{ .LinePosition }}</div> </h2>
         <h2>Total Hits: <div id="totalHits">{{ .TotalHits }}</div> </h2>
     </div>
