@@ -13,7 +13,6 @@ type Server struct {
 	register   chan *Client
 	unregister chan *Client
 	clients    map[*Client]bool
-	state      *State
 }
 
 func newServer() *Server {
@@ -26,7 +25,6 @@ func newServer() *Server {
 		unregister: make(chan *Client, 10000),
 		clients:    make(map[*Client]bool),
 		ctx:        ctx,
-		state:      &InitState,
 	}
 }
 
@@ -46,7 +44,7 @@ func (s *Server) run() {
 			}
 		// broadcast click
 		case click := <-s.broadcast:
-			var inc int
+			var inc int32
 
 			if click.color == BLUE {
 				inc = 1
@@ -54,18 +52,14 @@ func (s *Server) run() {
 				inc = -1
 			}
 
-			s.state.Lock()
-			s.state.linePosition += inc
-			s.state.totalHits++
-			s.state.Unlock()
+			linePosition.Add(inc)
+			totalHits.Add(1)
 			log.Printf("Recieved %v", click)
 
-			s.state.RLock()
-			log.Printf("line position: %d\n", s.state.linePosition)
-			log.Printf("total hits: %d\n", s.state.totalHits)
-			s.state.RUnlock()
+			log.Printf("line position: %d\n", linePosition.Load())
+			log.Printf("total hits: %d\n", totalHits.Load())
 
-			outBoundMessage := click.Serialize(s.state)
+			outBoundMessage := click.Serialize()
 			fmt.Printf("num clients %d\n", len(s.clients))
 			for client := range s.clients {
 				fmt.Printf("client %v\n", client.ip)

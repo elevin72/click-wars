@@ -1,20 +1,13 @@
 package main
 
 import (
-	"sync"
+	"sync/atomic"
 )
 
-type State struct {
-	linePosition int
-	totalHits    int
-	leftHits     int
-	rightHits    int
-	sync.RWMutex
-}
+var linePosition atomic.Int32
 
-var InitState State = State{
-	linePosition: 0,
-	totalHits:    0,
-	leftHits:     0,
-	rightHits:    0,
-}
+var totalHits atomic.Int32
+
+var leftHits atomic.Int32
+
+var rightHits atomic.Int32

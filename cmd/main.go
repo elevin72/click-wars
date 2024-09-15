@@ -24,13 +24,12 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		log.Print(err)
 	}
 
-	// get state ???
 	t.Execute(w, struct {
 		LinePosition int32
 		TotalHits    int32
 	}{
-		LinePosition: 0,
-		TotalHits:    0,
+		LinePosition: linePosition.Load(),
+		TotalHits:    totalHits.Load(),
 	})
 }
 
@@ -38,28 +37,30 @@ func staticHandler(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	if strings.HasSuffix(path, "js") {
 		w.Header().Set("Content-Type", "text/javascript")
-	} else {
+	} else if strings.HasSuffix(path, "css") {
 		w.Header().Set("Content-Type", "text/css")
+	} else {
+		fmt.Println("something else")
 	}
+
 	http.FileServer(http.FS(static)).ServeHTTP(w, r)
 }
 
-// func percentageOnLoadHandler(w http.ResponseWriter, r *http.Request) {
-// 	log.Printf("hit percentage.css\n")
-// 	t, err := template.ParseFiles("../frontend/static/css/percentage.css.tmpl")
-// 	if err != nil {
-// 		log.Print(err)
-// 	}
-// 	percentage := float32(LINE_POSITION/-2) + 50
-// 	w.Header().Set("Content-Type", "text/css")
-// 	t.Execute(w, struct {
-// 		LeftSide  float32
-// 		RightSide float32
-// 	}{
-// 		LeftSide:  100 - percentage,
-// 		RightSide: percentage,
-// 	})
-// }
+func percentageOnLoadHandler(w http.ResponseWriter, r *http.Request) {
+	t, err := template.ParseFS(static, "static/css/percentage.css.tmpl")
+	if err != nil {
+		log.Print(err)
+	}
+	w.Header().Set("Content-Type", "text/css")
+	percentage := float32(linePosition.Load()/-2) + 50
+	t.Execute(w, struct {
+		LeftSide  float32
+		RightSide float32
+	}{
+		LeftSide:  100 - percentage,
+		RightSide: percentage,
+	})
+}
 
 func main() {
 
@@ -68,10 +69,10 @@ func main() {
 
 	http.HandleFunc("/", rootHandler)
 	http.HandleFunc("/static/", staticHandler)
+	http.HandleFunc("/static/css/percentage.css", percentageOnLoadHandler)
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(server, w, r)
 	})
-	// http.HandleFunc("/static/css/percentage.css", percentageOnLoadHandler)
 
 	port := "8080"
 	fmt.Printf("Server started on http://localhost:%s\n", port)

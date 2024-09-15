@@ -43,18 +43,13 @@ func deserializeClick(message []byte) (*Click, error) {
 	}, nil
 }
 
-func (click *Click) Serialize(state *State) []byte {
+func (click *Click) Serialize() []byte {
 
 	// this is dumb
-	state.RLock()
-	linePosition := state.linePosition
-	totalHits := state.totalHits
-	state.RUnlock()
-
 	msg := make([]byte, 18)
 	msg[0] = LONG
-	binary.LittleEndian.PutUint32(msg[1:5], uint32(linePosition))
-	binary.LittleEndian.PutUint32(msg[5:9], uint32(totalHits))
+	binary.LittleEndian.PutUint32(msg[1:5], uint32(linePosition.Load()))
+	binary.LittleEndian.PutUint32(msg[5:9], uint32(totalHits.Load()))
 	binary.LittleEndian.PutUint32(msg[9:13], math.Float32bits(click.x))
 	binary.LittleEndian.PutUint32(msg[13:17], math.Float32bits(click.y))
 	msg[17] = click.color
