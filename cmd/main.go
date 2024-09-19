@@ -27,9 +27,7 @@ func main() {
 	http.HandleFunc("/", RootHandler)
 	http.HandleFunc("/static/", StaticHandler)
 	http.HandleFunc("/static/css/percentage.css", PercentageOnLoadHandler)
-	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		ServeWs(server, w, r)
-	})
+	http.HandleFunc("/ws", MakeWebsocketHandler(server))
 
 	port := "8080"
 	fmt.Printf("Server started on http://localhost:%s\n", port)

@@ -89,3 +89,9 @@ func PercentageOnLoadHandler(w http.ResponseWriter, r *http.Request) {
 	widths := calcPercentageWidths()
 	t.Execute(w, widths)
 }
+
+func MakeWebsocketHandler(server *Server) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ServeWs(server, w, r)
+	}
+}
