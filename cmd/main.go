@@ -15,7 +15,8 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 
-	. "github.com/elevin72/click-wars/internal"
+	. "github.com/elevin72/click-wars/internal/routes"
+	. "github.com/elevin72/click-wars/internal/server"
 )
 
 func main() {

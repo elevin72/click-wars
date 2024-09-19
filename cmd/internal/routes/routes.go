@@ -1,4 +1,4 @@
-package internal
+package routes
 
 import (
 	// "database/sql"
@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"strings"
 
+	. "github.com/elevin72/click-wars/internal/server"
 	_ "github.com/mattn/go-sqlite3"
 )
 
