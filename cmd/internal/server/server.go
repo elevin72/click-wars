@@ -9,7 +9,7 @@ import (
 
 type Server struct {
 	ctx        context.Context
-	broadcast  chan *Click
+	broadcast  chan IncomingClick
 	register   chan *Client
 	unregister chan *Client
 	clients    map[*Client]bool
@@ -20,7 +20,7 @@ func NewServer() *Server {
 	ctx := context.Background()
 
 	return &Server{
-		broadcast:  make(chan *Click, 100000),
+		broadcast:  make(chan IncomingClick, 100000),
 		register:   make(chan *Client, 10000),
 		unregister: make(chan *Client, 10000),
 		clients:    make(map[*Client]bool),
@@ -31,22 +31,19 @@ func NewServer() *Server {
 func (s *Server) Run() {
 	for {
 		select {
-		// register new client
 		case client := <-s.register:
-			log.Println("Registering new client")
+			log.Printf("Registering new client, %v\n", client)
 			s.clients[client] = true
-		// unregister client
 		case client := <-s.unregister:
-			log.Println("Unregistering client")
+			log.Printf("Unregistering client, %v\n", client)
 			if _, ok := s.clients[client]; ok {
 				delete(s.clients, client)
-				close(client.send) // TODO ??
+				close(client.send)
 			}
-		// broadcast click
 		case click := <-s.broadcast:
 			var inc int32
 
-			if click.color == BLUE {
+			if click.side == LEFT {
 				inc = 1
 			} else {
 				inc = -1
@@ -54,20 +51,18 @@ func (s *Server) Run() {
 
 			LinePosition.Add(inc)
 			TotalHits.Add(1)
-			log.Printf("Recieved %v", click)
 
-			log.Printf("line position: %d\n", LinePosition.Load())
-			log.Printf("total hits: %d\n", TotalHits.Load())
-
-			outBoundMessage := click.Serialize()
-			fmt.Printf("num clients %d\n", len(s.clients))
-			for client := range s.clients {
-				fmt.Printf("client %v\n", client.ip)
-
+			serverClick := ServerClick{
+				click,
+				LinePosition.Load(),
+				TotalHits.Load(),
 			}
+
+			log.Printf("Recieved %v", serverClick)
+			fmt.Printf("num of connected clients %d\n", len(s.clients))
 			for client := range s.clients {
 				select {
-				case client.send <- outBoundMessage:
+				case client.send <- serverClick.outgoingBytes(client):
 				default:
 					close(client.send)
 					delete(s.clients, client)

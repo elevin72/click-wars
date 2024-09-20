@@ -6,16 +6,20 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
 type Client struct {
 	server   *Server
 	conn     *websocket.Conn
-	lastPing time.Time
+	lastPing time.Time //fairly certain that lastping is pointless now
 	send     chan []byte
-	ip       int
-	id       int64
+	UUID     uuid.UUID // TODO: use counter atomic.Int64 instead of uuid
+}
+
+func (c *Client) String() string {
+	return fmt.Sprintf("Client{UUID: %v}", c.UUID)
 }
 
 const (
@@ -44,8 +48,8 @@ func ServeWs(server *Server, w http.ResponseWriter, r *http.Request) {
 		server:   server,
 		conn:     conn,
 		lastPing: time.Now(),
-		send:     make(chan []byte, 256),
-		// ip:       int64,
+		send:     make(chan []byte),
+		UUID:     uuid.New(),
 	}
 
 	server.register <- client
@@ -69,7 +73,7 @@ func (c *Client) readFromSocket() {
 	})
 
 	for {
-		_, message, err := c.conn.ReadMessage()
+		_, incomingBytes, err := c.conn.ReadMessage()
 		if err != nil {
 			log.Println(err)
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
@@ -78,18 +82,25 @@ func (c *Client) readFromSocket() {
 			break
 		}
 
-		if message[0] == websocket.PingMessage {
+		if incomingBytes[0] == websocket.PingMessage {
 			log.Println("Pong")
 			c.lastPing = time.Now()
 			continue
 		}
 
-		click, err := deserializeClick(message)
+		click, err := parseIncomingClick(incomingBytes, c.UUID)
 		if err != nil {
 			log.Println(err)
 		}
 
 		c.server.broadcast <- click
+	}
+}
+
+func (c *Client) writeMessage(message []byte) {
+	err := c.conn.WriteMessage(websocket.BinaryMessage, message)
+	if err != nil {
+		log.Println(err)
 	}
 }
 
@@ -108,17 +119,11 @@ func (c *Client) writeToSocket() {
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
-			err := c.conn.WriteMessage(websocket.BinaryMessage, message)
-			if err != nil {
-				log.Println(err)
-			}
+			c.writeMessage(message)
 
 			n := len(c.send)
 			for i := 0; i < n; i++ {
-				err := c.conn.WriteMessage(websocket.BinaryMessage, <-c.send)
-				if err != nil {
-					log.Println(err)
-				}
+				c.writeMessage(message)
 			}
 		case <-ticker.C:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))

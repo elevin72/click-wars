@@ -27,7 +27,6 @@ socket.onmessage = function(event) {
         console.log(`Received remote click at: (${x}, ${y}), color: ${color === 0 ? 'blue' : 'red'}, totalHits: ${totalHits}, linePosition ${linePosition}`, );
         updatePostClick(linePosition, totalHits)
         drawExpandingCircle(x, y);
-
     } else if (dataView.getUint8(0) === 1) {
         const linePosition = dataView.getInt32(1, true);
         const totalHits = dataView.getInt32(5, true);

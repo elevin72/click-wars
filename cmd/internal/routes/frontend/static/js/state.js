@@ -25,7 +25,7 @@ export function updateTotalHits(newTotalHits) {
 
 export function updateLinePostion(linePosition) {
     setLinePosition(linePosition)
-    const percentage = ((linePosition * 1) + 50)
+    const percentage = ((linePosition * 2) + 50)
     let leftPerecentage, rightPercentage;
     if (percentage > 90 || percentage < 10) {
         leftPerecentage = "10%" ? percentage <= 10 : "90%"
