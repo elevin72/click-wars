@@ -1,7 +1,6 @@
 package routes
 
 import (
-	// "database/sql"
 	"embed"
 	"fmt"
 	"html/template"
@@ -11,7 +10,8 @@ import (
 	"net/http"
 	"strings"
 
-	. "github.com/elevin72/click-wars/internal/server"
+	"github.com/elevin72/click-wars/internal/server"
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -24,8 +24,8 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 		log.Print(err)
 	}
 
-	linePosition := LinePosition.Load()
-	totalHits := TotalHits.Load()
+	linePosition := server.LinePosition.Load()
+	totalHits := server.TotalHits.Load()
 	i := IndexParams{
 		LinePosition: linePosition,
 		TotalHits:    totalHits,
@@ -73,7 +73,7 @@ func calcPercentageWidths() Widths {
 	// 	fmt.Print(err)
 	// }
 	scalingConstantFloat := 2
-	percentage := (float32(LinePosition.Load()) * float32(scalingConstantFloat)) + 50
+	percentage := (float32(server.LinePosition.Load()) * float32(scalingConstantFloat)) + 50
 	return Widths{
 		LeftWidth:  percentage,
 		RightWidth: 100 - percentage,
@@ -90,8 +90,8 @@ func PercentageOnLoadHandler(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, widths)
 }
 
-func MakeWebsocketHandler(server *Server) func(w http.ResponseWriter, r *http.Request) {
+func MakeWebsocketHandler(s *server.Server) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ServeWs(server, w, r)
+		server.ServeWs(s, w, r)
 	}
 }

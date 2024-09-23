@@ -25,12 +25,15 @@ socket.onmessage = function(event) {
         const y = dataView.getFloat32(13, true);
         const color = dataView.getUint8(17); // 0 for blue, 1 for red
         console.log(`Received remote click at: (${x}, ${y}), color: ${color === 0 ? 'blue' : 'red'}, totalHits: ${totalHits}, linePosition ${linePosition}`, );
-        updatePostClick(linePosition, totalHits)
         drawExpandingCircle(x, y);
+        updatePostClick(linePosition, totalHits)
     } else if (dataView.getUint8(0) === 1) {
         const linePosition = dataView.getInt32(1, true);
         const totalHits = dataView.getInt32(5, true);
-        console.log(`totalHits: ${totalHits}, linePosition ${linePosition}`, );
+        const x = dataView.getFloat32(9, true); // true for little-endian
+        const y = dataView.getFloat32(13, true);
+        const color = dataView.getUint8(17); // 0 for blue, 1 for red
+        console.log(`Received self click from server at: (${x}, ${y}), color: ${color === 0 ? 'blue' : 'red'}, totalHits: ${totalHits}, linePosition ${linePosition}`, );
         updatePostClick(linePosition, totalHits)
     }
     return

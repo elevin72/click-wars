@@ -10,17 +10,13 @@ function onClick(event) {
     const x = (event.clientX - rect.left) / (rect.right - rect.left);
     const y = (event.clientY - rect.top) / (rect.bottom - rect.top);
 
-    let color, newLinePosition;
-    const oldLinePosition = getLinePosition()
+    let color;
     if (event.target === leftSide || leftSide.contains(event.target)) {
         color = 0;
-        newLinePosition = oldLinePosition + 1;
     } else {
         color = 1;
-        newLinePosition = oldLinePosition - 1;
     }
 
-    updatePostClick(newLinePosition, getTotalHits() + 1)
     drawExpandingCircle(x, y)
 
     console.log(`Local click at: (${x}, ${y}), color: ${color === 0 ? 'blue' : 'red'}, totalHits: ${getTotalHits()}, linePosition ${getLinePosition()}`, );
