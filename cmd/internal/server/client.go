@@ -8,14 +8,24 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+
+	"github.com/elevin72/click-wars/internal/click"
 )
 
 type Client struct {
-	server   *Server
-	conn     *websocket.Conn
-	lastPing time.Time //fairly certain that lastping is pointless now
-	send     chan []byte
-	UUID     uuid.UUID // TODO: use counter atomic.Int64 instead of uuid
+	server *Server
+	conn   *websocket.Conn
+	send   chan []byte
+	UUID   uuid.UUID // TODO: use counter atomic.Int64 instead of uuid
+}
+
+func NewClient(server *Server, conn *websocket.Conn) *Client {
+	return &Client{
+		server: server,
+		conn:   conn,
+		send:   make(chan []byte, 256),
+		UUID:   uuid.New(),
+	}
 }
 
 func (c *Client) String() string {
@@ -44,19 +54,12 @@ func ServeWs(server *Server, w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
-	client := &Client{
-		server:   server,
-		conn:     conn,
-		lastPing: time.Now(),
-		send:     make(chan []byte),
-		UUID:     uuid.New(),
-	}
+	client := NewClient(server, conn)
 
 	server.register <- client
 
 	go client.readFromSocket()
 	go client.writeToSocket()
-
 }
 
 func (c *Client) readFromSocket() {
@@ -82,13 +85,7 @@ func (c *Client) readFromSocket() {
 			break
 		}
 
-		if incomingBytes[0] == websocket.PingMessage {
-			log.Println("Pong")
-			c.lastPing = time.Now()
-			continue
-		}
-
-		click, err := parseIncomingClick(incomingBytes, c.UUID)
+		click, err := click.ParseIncomingClick(incomingBytes, c.UUID)
 		if err != nil {
 			log.Println(err)
 		}
@@ -98,6 +95,13 @@ func (c *Client) readFromSocket() {
 }
 
 func (c *Client) writeMessage(message []byte) {
+	if message[0] == 0 {
+		log.Println("sending byte to other")
+	} else if message[0] == 1 {
+		log.Println("sending bytes to self")
+	} else {
+		log.Println("wtf")
+	}
 	err := c.conn.WriteMessage(websocket.BinaryMessage, message)
 	if err != nil {
 		log.Println(err)

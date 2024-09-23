@@ -1,17 +1,8 @@
-import { drawExpandingCircle } from "./animation.js";
-let linePosition = 0;
-let totalHits = 0;
-
-export function setTotalHits(newTotalHits) {
-    totalHits = newTotalHits;
-}
+let linePosition = parseInt(document.getElementById("linePosition").innerText)
+let totalHits = parseInt(document.getElementById("totalHits").innerText)
 
 export function getTotalHits() {
     return totalHits;
-}
-
-export function setLinePosition(newLinePosition) {
-    linePosition = newLinePosition;
 }
 
 export function getLinePosition() {
@@ -19,12 +10,12 @@ export function getLinePosition() {
 }
 
 export function updateTotalHits(newTotalHits) {
-    setTotalHits(newTotalHits);
+    totalHits = newTotalHits;
     document.getElementById("totalHits").innerText = newTotalHits;
 }
 
-export function updateLinePostion(linePosition) {
-    setLinePosition(linePosition)
+export function updateLinePostion(newLinePosition) {
+    linePosition = newLinePosition;
     const percentage = ((linePosition * 2) + 50)
     let leftPerecentage, rightPercentage;
     if (percentage > 90 || percentage < 10) {
